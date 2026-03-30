@@ -17,6 +17,7 @@ export const categoryApi = baseApi.injectEndpoints({
         method: "POST",
         data: formData,
       }),
+      invalidatesTags: ["CATEGORIES"],
     }),
 
     // ⭐ UPDATE CATEGORY
@@ -28,7 +29,11 @@ export const categoryApi = baseApi.injectEndpoints({
         url: `/category/${id}`,
         method: "PATCH",
         data: formData,
-      })
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "CATEGORIES",
+        { type: "CATEGORY", id },
+      ],
     }),
 
     // ⭐ DELETE CATEGORY
@@ -36,7 +41,11 @@ export const categoryApi = baseApi.injectEndpoints({
       query: (id) => ({
         url: `/category/${id}`,
         method: "DELETE",
-      })
+      }),
+      invalidatesTags: (result, error, id) => [
+        "CATEGORIES",
+        { type: "CATEGORY", id },
+      ],
     }),
 
     // ⭐ GET SINGLE CATEGORY (by slug)
@@ -44,7 +53,10 @@ export const categoryApi = baseApi.injectEndpoints({
       query: (slug) => ({
         url: `/category/${slug}`,
         method: "GET",
-      })
+      }),
+      providesTags: (result, error, slug) => [
+        { type: "CATEGORY", id: slug },
+      ],
     }),
 
     // ⭐ GET ALL CATEGORIES
@@ -53,7 +65,8 @@ export const categoryApi = baseApi.injectEndpoints({
         url: "/category/all-categories",
         method: "GET",
         params
-      })
+      }),
+      providesTags: ["CATEGORIES"],
     }),
 
   }),
