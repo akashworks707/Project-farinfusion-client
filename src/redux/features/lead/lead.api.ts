@@ -18,6 +18,7 @@ export const leadApi = baseApi.injectEndpoints({
         method: "POST",
         data: formData,
       }),
+      invalidatesTags: ["LEADS"],
     }),
 
     // UPDATE USER
@@ -30,6 +31,7 @@ export const leadApi = baseApi.injectEndpoints({
         method: "PATCH",
         data: data,
       }),
+      invalidatesTags: (result, error, { id }) => ["LEADS", { type: "LEAD", id }],
     }),
 
     // DELETE USER
@@ -37,7 +39,8 @@ export const leadApi = baseApi.injectEndpoints({
       query: (id) => ({
         url: `/lead/${id}`,
         method: "DELETE",
-      })
+      }),
+      invalidatesTags: (result, error, id) => ["LEADS", { type: "LEAD", id }],
     }),
 
     // GET SINGLE USER
@@ -46,6 +49,7 @@ export const leadApi = baseApi.injectEndpoints({
         url: `/lead/${id}`,
         method: "GET",
       }),
+       providesTags: (result, error, slug) => [{ type: "LEAD", id: slug }],
     }),
 
     getAllLead: builder.query<GetAllLeadResponse, GetQueryParams>({
@@ -53,7 +57,9 @@ export const leadApi = baseApi.injectEndpoints({
         url: "/lead/all-leads",
         method: "GET",
         params: params
-      })
+      }),
+      providesTags: ["LEADS"],
+
     }),
 
 
