@@ -1,9 +1,10 @@
 import React from 'react';
+import TrashLeadPage from "@/components/dashboard/leads/TrashLeadPage";
 
 const Page = () => {
     return (
         <div>
-          Trash Leads Dashboard
+            <TrashLeadPage />
         </div>
     );
 };

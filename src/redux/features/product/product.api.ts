@@ -57,14 +57,25 @@ export const productApi = baseApi.injectEndpoints({
       }),
       providesTags: ["PRODUCTS"],
     }),
+
+    // ⭐ GET ALL products
+    getAllTrashProducts: builder.query<GetAllFoodsResponse, GetQueryParams>({
+      query: (params) => ({
+        url: "/product/all-products",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["PRODUCTS"],
+    }),
   }),
   overrideExisting: true,
 });
 
 export const {
-  useCreateProductMutation,
-  useUpdateProductMutation,
-  useGetSingleProductQuery,
-  useDeleteProductMutation,
-  useGetAllProductsQuery
+    useCreateProductMutation,
+    useUpdateProductMutation,
+    useGetSingleProductQuery,
+    useDeleteProductMutation,
+    useGetAllProductsQuery,
+    useGetAllTrashProductsQuery,
 } = productApi;

@@ -31,10 +31,11 @@ export function LeadDetailModal({ open, onOpenChange, leadId }: Props) {
     });
 
     const lead  = data?.data;
+    console.log("Lead Data : ", lead);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-sm">
+            <DialogContent className="sm:max-w-md ">
                 <DialogHeader className="text-center py-5">
                     <DialogTitle>
                         <DashboardPageHeader title={"Lead Details"} />
@@ -54,13 +55,21 @@ export function LeadDetailModal({ open, onOpenChange, leadId }: Props) {
                         <Card className="border-0 shadow-sm bg-gray-50/70">
                             <div className="p-5 space-y-4">
 
+                                {/*name*/}
+                                <div className="flex justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Mail className="w-4 h-4" />
+                                        <span>Name</span>
+                                    </div>
+                                    <span>{lead?.name}</span>
+                                </div>
                                 {/* Email */}
                                 <div className="flex justify-between">
                                     <div className="flex items-center gap-3">
                                         <Mail className="w-4 h-4" />
                                         <span>Email</span>
                                     </div>
-                                    <span>{lead.email}</span>
+                                    <span>{lead?.email}</span>
                                 </div>
 
                                 {/* Phone */}
@@ -69,7 +78,7 @@ export function LeadDetailModal({ open, onOpenChange, leadId }: Props) {
                                         <PhoneIcon className="w-4 h-4" />
                                         <span>Phone</span>
                                     </div>
-                                    <span>{lead.phone}</span>
+                                    <span>{lead?.phone}</span>
                                 </div>
 
                                 {/* Address */}
@@ -78,18 +87,45 @@ export function LeadDetailModal({ open, onOpenChange, leadId }: Props) {
                                         <LocationEditIcon className="w-4 h-4" />
                                         <span>Address</span>
                                     </div>
-                                    <span>{lead.address}</span>
+                                    <span>{lead?.address}</span>
+                                </div>
+
+                                {/*status*/}
+                                <div className="flex justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <LocationEditIcon className="w-4 h-4" />
+                                        <span>Status</span>
+                                    </div>
+                                    <span>{lead?.status}</span>
+                                </div>
+
+                                {/*priority*/}
+                                <div className="flex justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <LocationEditIcon className="w-4 h-4" />
+                                        <span>Priority</span>
+                                    </div>
+                                    <span>{lead.priority}</span>
+                                </div>
+
+                                {/*notes*/}
+                                <div className="flex justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <LocationEditIcon className="w-4 h-4" />
+                                        <span>Notes</span>
+                                    </div>
+                                    <span>{lead.notes || ""}</span>
                                 </div>
 
                                 {/* Created Date */}
-                                {lead.createdAt && (
+                                {lead?.createdAt && (
                                     <div className="flex justify-between">
                                         <div className="flex items-center gap-3">
                                             <Calendar className="w-4 h-4" />
                                             <span>Joined</span>
                                         </div>
                                         <span>
-                                          {new Date(lead.createdAt).toLocaleDateString()}
+                                          {new Date(lead?.createdAt).toLocaleDateString()}
                                         </span>
                                     </div>
                                 )}

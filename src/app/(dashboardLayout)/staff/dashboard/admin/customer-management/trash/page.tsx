@@ -1,10 +1,10 @@
 import React from 'react';
-import TrashCategoryPage from "@/components/dashboard/category/TrashCategoryPage";
+import TrashCustomerPage from "@/components/dashboard/customer/TrashCustomerPage";
 
 const Page = () => {
     return (
         <div>
-            <TrashCategoryPage />
+            <TrashCustomerPage />
         </div>
     );
 };

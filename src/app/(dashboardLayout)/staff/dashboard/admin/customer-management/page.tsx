@@ -17,6 +17,7 @@ import TablePagination from "@/components/shared/TablePagination";
 import { DynamicDataTable } from "@/components/dashboard/DataTable";
 import DashboardManagementPageSkeleton from "@/components/dashboard/DashboardManagePageSkeleton";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
+import CustomerToolbar from "@/components/dashboard/customer/CustomerToolbar";
 
 const CustomerManagementPage = () => {
   const [deleteUser] = useDeleteUserMutation();
@@ -94,7 +95,7 @@ const CustomerManagementPage = () => {
   return (
     <div>
       <DashboardPageHeader title="Customer Management" />
-      <UserToolbar
+      <CustomerToolbar
         onSearchChange={setSearchTerm}
         onSortChange={setSort}
       />
