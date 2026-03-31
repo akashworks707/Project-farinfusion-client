@@ -11,24 +11,29 @@ export const brandApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
     // ⭐ CREATE CATEGORY
-    createBrand: builder.mutation<IResponse<IBrand>, FormData>({
+    createBrand: builder.mutation<IResponse<ICategory>, FormData>({
       query: (formData) => ({
         url: "/brand/create-brand",
         method: "POST",
         data: formData,
-      })
+      }),
+      invalidatesTags: ["BRANDS"],
     }),
 
     // ⭐ UPDATE CATEGORY
     updateBrand: builder.mutation<
-      IResponse<IBrand>,
+      IResponse<ICategory>,
       { id: string; formData: FormData }
     >({
       query: ({ id, formData }) => ({
         url: `/brand/${id}`,
         method: "PATCH",
         data: formData,
-      })
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "BRANDS",
+        { type: "BRAND", id },
+      ],
     }),
 
     // ⭐ DELETE CATEGORY
@@ -36,15 +41,22 @@ export const brandApi = baseApi.injectEndpoints({
       query: (id) => ({
         url: `/brand/${id}`,
         method: "DELETE",
-      })
+      }),
+      invalidatesTags: (result, error, id) => [
+        "BRANDS",
+        { type: "BRAND", id },
+      ],
     }),
 
     // ⭐ GET SINGLE CATEGORY (by slug)
-    getSingleBrand: builder.query<IResponse<IBrand>, string>({
+    getSingleBrand: builder.query<IResponse<ICategory>, string>({
       query: (slug) => ({
         url: `/brand/${slug}`,
         method: "GET",
       }),
+      providesTags: (result, error, slug) => [
+        { type: "BRAND", id: slug },
+      ],
     }),
 
     // ⭐ GET ALL CATEGORIES
@@ -53,7 +65,8 @@ export const brandApi = baseApi.injectEndpoints({
         url: "/brand/all-brands",
         method: "GET",
         params
-      })
+      }),
+      providesTags: ["BRANDS"],
     }),
 
   }),

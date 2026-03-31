@@ -18,6 +18,7 @@ export const userApi = baseApi.injectEndpoints({
         method: "POST",
         data: formData,
       }),
+      invalidatesTags: (result, error, arg) => ["USERS"],
     }),
 
     // UPDATE USER
@@ -30,6 +31,10 @@ export const userApi = baseApi.injectEndpoints({
         method: "PATCH",
         data: data,
       }),
+      invalidatesTags: (result, error, { id }) => [
+        "USERS",
+        { type: "USER", id },
+      ],
     }),
 
     // DELETE USER
@@ -38,6 +43,10 @@ export const userApi = baseApi.injectEndpoints({
         url: `/user/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: (result, error, id) => [
+        "USERS",
+        { type: "USER", id },
+      ],
     }),
 
     // GET SINGLE USER
@@ -46,6 +55,7 @@ export const userApi = baseApi.injectEndpoints({
         url: `/user/${id}`,
         method: "GET",
       }),
+      providesTags: (result, error, id) => [{ type: "USER", id }],
     }),
 
     getAllUsers: builder.query<GetAllUsersResponse, GetQueryParams>({
@@ -54,6 +64,7 @@ export const userApi = baseApi.injectEndpoints({
         method: "GET",
         params: params
       }),
+      providesTags: ["USERS"],
     }),
 
     getAllCustomers: builder.query<GetAllUsersResponse, GetQueryParams>({
@@ -62,6 +73,7 @@ export const userApi = baseApi.injectEndpoints({
         method: "GET",
         params: params
       }),
+      providesTags: ["CUSTOMERS"],
     }),
 
     //  GET ME (Logged-in user's own profile)
@@ -70,6 +82,8 @@ export const userApi = baseApi.injectEndpoints({
         url: "/user/me",
         method: "GET",
       }),
+
+      providesTags: ["ME", "USER"],
     }),
   }),
   overrideExisting: true,
