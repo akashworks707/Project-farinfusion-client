@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
@@ -23,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 import logo from "../../../../public/assets/FRN-Logo-scaled.webp";
-import { useRegisterMutation } from "@/redux/features/user/user.api";
+import { registerUser } from "@/utils/registerUser";
 
 enum Role {
   ADMIN = "ADMIN",
@@ -40,14 +41,11 @@ const signupSchema = z
     email: z.string().email("Please enter a valid email address"),
     phone: z.string().min(10, "Please enter a valid phone number"),
     address: z.string().min(5, "Address must be at least 5 characters"),
-    salary: z.preprocess(
-      (val) => {
-        if (val === "" || val === undefined || val === null) return undefined;
-        const num = Number(val);
-        return isNaN(num) ? undefined : num;
-      },
-      z.number().min(0, "Salary must be a positive number").optional()
-    ),
+    salary: z.preprocess((val) => {
+      if (val === "" || val === undefined || val === null) return undefined;
+      const num = Number(val);
+      return isNaN(num) ? undefined : num;
+    }, z.number().min(0, "Salary must be a positive number").optional()),
     role: z.nativeEnum(Role, { message: "Please select a role" }),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string().min(6, "Please confirm your password"),
@@ -102,7 +100,7 @@ export default function RegisterModal() {
   const [open, setOpen] = useState(false);
   const [pictureFile, setPictureFile] = useState<File | null>(null);
   const [picturePreview, setPicturePreview] = useState<string | null>(null);
-  const [register, { isLoading }] = useRegisterMutation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register: registerField,
@@ -152,8 +150,9 @@ export default function RegisterModal() {
   };
 
   const onSubmit = async (data: SignupFormValues) => {
+    setIsLoading(true);
     try {
-      const { confirmPassword, salary, ...rest } = data;
+      const { salary, ...rest } = data;
 
       // FormData দিয়ে পাঠাও যাতে file যায়
       const formData = new FormData();
@@ -175,18 +174,27 @@ export default function RegisterModal() {
         formData.append("picture", pictureFile);
       }
 
-      const res = await register(formData).unwrap();
+      const res = await registerUser(formData);
       console.log("Register res", res);
       toast.success("Account created successfully!");
       handleClose();
     } catch (error) {
       console.error(error);
       toast.error("Registration failed. Please try again.");
+      setIsLoading(false);
+    } finally{
+      setIsLoading(false);
     }
   };
- 
+
   return (
-    <Dialog open={open} onOpenChange={(val) => { if (!val) handleClose(); else setOpen(true); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(val) => {
+        if (!val) handleClose();
+        else setOpen(true);
+      }}
+    >
       {/* Trigger */}
       <DialogTrigger asChild>
         <Button size="sm">
@@ -224,10 +232,12 @@ export default function RegisterModal() {
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-1">
-
           {/* Full Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase">
+            <Label
+              htmlFor="name"
+              className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase"
+            >
               Full Name
             </Label>
             <Input
@@ -238,12 +248,17 @@ export default function RegisterModal() {
               className="border-[#4a5568] bg-[#1e2829] text-white placeholder:text-[#96999A]
                 focus-visible:ring-[#c9a84c] focus-visible:border-[#c9a84c] transition-colors"
             />
-            {errors.name && <p className="text-xs text-red-400">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="text-xs text-red-400">{errors.name.message}</p>
+            )}
           </div>
 
           {/* Email */}
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase">
+            <Label
+              htmlFor="email"
+              className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase"
+            >
               Email Address
             </Label>
             <Input
@@ -254,12 +269,17 @@ export default function RegisterModal() {
               className="border-[#4a5568] bg-[#1e2829] text-white placeholder:text-[#96999A]
                 focus-visible:ring-[#c9a84c] focus-visible:border-[#c9a84c] transition-colors"
             />
-            {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-xs text-red-400">{errors.email.message}</p>
+            )}
           </div>
 
           {/* Phone */}
           <div className="space-y-1.5">
-            <Label htmlFor="phone" className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase">
+            <Label
+              htmlFor="phone"
+              className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase"
+            >
               Phone Number
             </Label>
             <Input
@@ -270,12 +290,17 @@ export default function RegisterModal() {
               className="border-[#4a5568] bg-[#1e2829] text-white placeholder:text-[#96999A]
                 focus-visible:ring-[#c9a84c] focus-visible:border-[#c9a84c] transition-colors"
             />
-            {errors.phone && <p className="text-xs text-red-400">{errors.phone.message}</p>}
+            {errors.phone && (
+              <p className="text-xs text-red-400">{errors.phone.message}</p>
+            )}
           </div>
 
           {/* Address */}
           <div className="space-y-1.5">
-            <Label htmlFor="address" className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase">
+            <Label
+              htmlFor="address"
+              className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase"
+            >
               Address
             </Label>
             <Textarea
@@ -287,28 +312,40 @@ export default function RegisterModal() {
                 focus-visible:ring-[#c9a84c] focus-visible:border-[#c9a84c]
                 resize-none transition-colors"
             />
-            {errors.address && <p className="text-xs text-red-400">{errors.address.message}</p>}
+            {errors.address && (
+              <p className="text-xs text-red-400">{errors.address.message}</p>
+            )}
           </div>
 
           {/* Picture Upload */}
           <div className="space-y-1.5">
             <Label className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase">
               Profile Picture{" "}
-              <span className="text-[#96999A] normal-case font-normal">(optional)</span>
+              <span className="text-[#96999A] normal-case font-normal">
+                (optional)
+              </span>
             </Label>
 
             {picturePreview ? (
               // ── Preview ──
               <div className="relative flex items-center gap-3 rounded-md border border-[#4a5568] bg-[#1e2829] p-2">
-                <img
+                <Image
+                  width={200}
+                  height={200}
+                  priority
+                  quality={90}
                   src={picturePreview}
                   alt="Preview"
                   className="h-14 w-14 rounded-md object-cover shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white truncate">{pictureFile?.name}</p>
+                  <p className="text-sm text-white truncate">
+                    {pictureFile?.name}
+                  </p>
                   <p className="text-xs text-[#96999A]">
-                    {pictureFile ? (pictureFile.size / 1024).toFixed(1) + " KB" : ""}
+                    {pictureFile
+                      ? (pictureFile.size / 1024).toFixed(1) + " KB"
+                      : ""}
                   </p>
                 </div>
                 <button
@@ -332,7 +369,9 @@ export default function RegisterModal() {
                   <p className="text-sm text-[#96999A] group-hover:text-white transition-colors">
                     Click to upload photo
                   </p>
-                  <p className="text-xs text-[#96999A]/70">PNG, JPG, WEBP — max 2MB</p>
+                  <p className="text-xs text-[#96999A]/70">
+                    PNG, JPG, WEBP — max 2MB
+                  </p>
                 </div>
                 <input
                   id="picture-upload"
@@ -347,12 +386,16 @@ export default function RegisterModal() {
 
           {/* Salary & Role — side by side */}
           <div className="grid grid-cols-2 gap-3">
-
             {/* Salary */}
             <div className="space-y-1.5">
-              <Label htmlFor="salary" className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase">
+              <Label
+                htmlFor="salary"
+                className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase"
+              >
                 Salary{" "}
-                <span className="text-[#96999A] normal-case font-normal">(optional)</span>
+                <span className="text-[#96999A] normal-case font-normal">
+                  (optional)
+                </span>
               </Label>
               <Input
                 id="salary"
@@ -363,12 +406,17 @@ export default function RegisterModal() {
                 className="border-[#4a5568] bg-[#1e2829] text-white placeholder:text-[#96999A]
                   focus-visible:ring-[#c9a84c] focus-visible:border-[#c9a84c] transition-colors"
               />
-              {errors.salary && <p className="text-xs text-red-400">{errors.salary.message}</p>}
+              {errors.salary && (
+                <p className="text-xs text-red-400">{errors.salary.message}</p>
+              )}
             </div>
 
             {/* Role */}
             <div className="space-y-1.5">
-              <Label htmlFor="role" className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase">
+              <Label
+                htmlFor="role"
+                className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase"
+              >
                 Role
               </Label>
               <select
@@ -379,21 +427,27 @@ export default function RegisterModal() {
                   px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a84c]
                   focus:border-[#c9a84c] transition-colors"
               >
-                <option value="" disabled className="text-[#96999A]">Select role</option>
+                <option value="" disabled className="text-[#96999A]">
+                  Select role
+                </option>
                 {Object.values(Role).map((r) => (
                   <option key={r} value={r}>
                     {r.charAt(0) + r.slice(1).toLowerCase()}
                   </option>
                 ))}
               </select>
-              {errors.role && <p className="text-xs text-red-400">{errors.role.message}</p>}
+              {errors.role && (
+                <p className="text-xs text-red-400">{errors.role.message}</p>
+              )}
             </div>
-
           </div>
 
           {/* Password */}
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase">
+            <Label
+              htmlFor="password"
+              className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase"
+            >
               Password
             </Label>
             <PasswordField
@@ -406,7 +460,10 @@ export default function RegisterModal() {
 
           {/* Confirm Password */}
           <div className="space-y-1.5">
-            <Label htmlFor="confirmPassword" className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase">
+            <Label
+              htmlFor="confirmPassword"
+              className="text-[#c9a84c] text-xs font-semibold tracking-widest uppercase"
+            >
               Confirm Password
             </Label>
             <PasswordField
