@@ -17,6 +17,7 @@ export const productApi = baseApi.injectEndpoints({
         method: "POST",
         data: formData,
       }),
+      invalidatesTags: ["PRODUCTS"],
     }),
 
     // ⭐ UPDATE PRODUCT
@@ -25,7 +26,8 @@ export const productApi = baseApi.injectEndpoints({
         url: `/product/${_id}`,
         method: "PATCH",
         data: formData,
-      })
+      }),
+      invalidatesTags: (result, error, { _id }) => ["PRODUCTS", { type: "PRODUCT", _id }],
     }),
 
     // ⭐ DELETE PRODUCT
@@ -34,6 +36,7 @@ export const productApi = baseApi.injectEndpoints({
         url: `/product/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: (result, error, id) => ["PRODUCTS", { type: "PRODUCT", id }],
     }),
 
     // ⭐ GET SINGLE PRODUCT
@@ -42,6 +45,7 @@ export const productApi = baseApi.injectEndpoints({
         url: `/product/${slug}`,
         method: "GET",
       }),
+      providesTags: (result, error, slug) => [{ type: "PRODUCT", id: slug }],
     }),
 
     // ⭐ GET ALL products
@@ -51,6 +55,7 @@ export const productApi = baseApi.injectEndpoints({
         method: "GET",
         params,
       }),
+      providesTags: ["PRODUCTS"],
     }),
   }),
   overrideExisting: true,

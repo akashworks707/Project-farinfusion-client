@@ -114,7 +114,7 @@ export default function UserDetailsModal({
                       <div className="p-2 bg-orange-100 rounded-lg">
                         <Calendar className="h-5 w-5 text-orange-600" />
                       </div>
-                      <span className="font-medium text-[#65758B]">Joined</span>
+                      <span className="font-medium text-[#65758B]">Joined at</span>
                     </div>
                     <span className="font-medium text-[#002047]">
                       {new Date(user.createdAt).toLocaleDateString("en-US", {
