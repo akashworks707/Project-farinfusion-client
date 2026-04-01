@@ -1,14 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useGetAllOrdersQuery, useConfirmOrderMutation } from '@/redux/features/orders/ordersApi';
-import { useAppDispatch, useAppSelector } from '@/lib/hooks';
-import { OrderStats } from './OrderStats';
-import { OrderFilters } from './OrderFilters';
-import { OrderTable } from './OrderTable';
-import { ConfirmOrderModal } from './ConfirmOrderModal';
-import { OrderDetailsModal } from './OrderDetailsModal';
+import { useState, useEffect } from "react";
+import {
+  useGetAllOrdersQuery,
+  useConfirmOrderMutation,
+} from "@/redux/features/orders/ordersApi";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useUpdateCourierStatusMutation,
+} from "@/lib/hooks";
+import { OrderStats } from "./OrderStats";
+import { OrderFilters } from "./OrderFilters";
+import { OrderTable } from "./OrderTable";
+import { ConfirmOrderModal } from "./ConfirmOrderModal";
+import { OrderDetailsModal } from "./OrderDetailsModal";
 import {
   Pagination,
   PaginationContent,
@@ -16,28 +23,46 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
-import type { Order } from '@/types/orders';
-import { CourierProvider } from '@/types/courier';
-import { toast } from 'sonner';
-import { resetFilters, setSearchFilter, setStatusFilter, setPage, setSelectedOrder as setSelectedOrderAction, setConfirmingOrder as setConfirmingOrderAction } from '@/redux/features/orders/ordersSlice';
+} from "@/components/ui/pagination";
+import type { Order } from "@/types/orders";
+import { CourierProvider } from "@/types/courier";
+import { toast } from "sonner";
+import {
+  resetFilters,
+  setSearchFilter,
+  setStatusFilter,
+  setPage,
+  setSelectedOrder as setSelectedOrderAction,
+  setConfirmingOrder as setConfirmingOrderAction,
+} from "@/redux/features/orders/ordersSlice";
 
 export default function OrdersManagement() {
   const dispatch = useAppDispatch();
 
   const filters = useAppSelector((state) => state.orders.filters);
-  const selectedOrderId = useAppSelector((state) => state.orders.selectedOrderId);
-  const confirmingOrderId = useAppSelector((state) => state.orders.confirmingOrderId);
+  const selectedOrderId = useAppSelector(
+    (state) => state.orders.selectedOrderId,
+  );
+  const confirmingOrderId = useAppSelector(
+    (state) => state.orders.confirmingOrderId,
+  );
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [confirmingOrder, setConfirmingOrder] = useState<Order | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
-  const { data: ordersData, isLoading, error } = useGetAllOrdersQuery({});
+  const {
+    data: ordersData,
+    isLoading,
+    error,
+    refetch,
+  } = useGetAllOrdersQuery({});
 
   const [confirmOrder, { isLoading: isConfirming, error: confirmError }] =
     useConfirmOrderMutation();
+
+  const [confirmCourier] = useUpdateCourierStatusMutation();
 
   // Load all orders for stats calculation
   const { data: allOrdersData } = useGetAllOrdersQuery({
@@ -45,35 +70,31 @@ export default function OrdersManagement() {
     limit: 1000,
   });
 
-  console.log(allOrdersData);
-
-
   useEffect(() => {
     if (selectedOrderId && ordersData?.data) {
       const order = ordersData.data.find((o) => o._id === selectedOrderId);
       if (order) {
-      setTimeout(() => {
+        setTimeout(() => {
           setSelectedOrder(order);
-        setDetailsOpen(true);
-      }, 100);
+          setDetailsOpen(true);
+        }, 100);
       }
     }
   }, [selectedOrderId, ordersData]);
-
 
   useEffect(() => {
     if (confirmingOrderId && ordersData?.data) {
       const order = ordersData.data.find((o) => o._id === confirmingOrderId);
       if (order) {
         setTimeout(() => {
-            setConfirmingOrder(order);
-        setConfirmModalOpen(true);
+          setConfirmingOrder(order);
+          setConfirmModalOpen(true);
         }, 100);
       }
     }
   }, [confirmingOrderId, ordersData]);
 
-  const handleStatusChange = (status: string | '') => {
+  const handleStatusChange = (status: string | "") => {
     dispatch(setStatusFilter(status as any));
   };
 
@@ -100,11 +121,13 @@ export default function OrdersManagement() {
       await confirmOrder({
         _id: confirmingOrder._id,
         courierName,
+        orderStatus: "CONFIRMED",
       }).unwrap();
 
-      toast.success('Success', {
-        
-        description: `Order ${confirmingOrder.orderID} has been confirmed with ${courierName}.`,
+      await refetch();
+
+      toast.success("Success", {
+        description: `Order ${confirmingOrder._id} has been confirmed with ${courierName}.`,
       });
 
       setConfirmModalOpen(false);
@@ -112,15 +135,14 @@ export default function OrdersManagement() {
       setConfirmingOrder(null);
     } catch (err: any) {
       toast.error("Error", {
-        
-        description: err?.data?.message || 'Failed to confirm order',
+        description: err?.data?.message || "Failed to confirm order",
       });
     }
   };
 
   const handlePageChange = (newPage: number) => {
     dispatch(setPage(newPage));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const orders = ordersData?.data || [];
@@ -157,7 +179,7 @@ export default function OrdersManagement() {
         <OrderTable
           orders={orders}
           loading={isLoading}
-          error={error ? 'Failed to load orders' : null}
+          error={error ? "Failed to load orders" : null}
           onConfirmOrder={handleConfirmClick}
           onViewOrder={handleViewClick}
         />
@@ -170,8 +192,12 @@ export default function OrdersManagement() {
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => filters.page > 1 && handlePageChange(filters.page - 1)}
-                  className={filters.page === 1 ? 'pointer-events-none opacity-50' : ''}
+                  onClick={() =>
+                    filters.page > 1 && handlePageChange(filters.page - 1)
+                  }
+                  className={
+                    filters.page === 1 ? "pointer-events-none opacity-50" : ""
+                  }
                 />
               </PaginationItem>
 
@@ -201,8 +227,15 @@ export default function OrdersManagement() {
 
               <PaginationItem>
                 <PaginationNext
-                  onClick={() => filters.page < totalPages && handlePageChange(filters.page + 1)}
-                  className={filters.page === totalPages ? 'pointer-events-none opacity-50' : ''}
+                  onClick={() =>
+                    filters.page < totalPages &&
+                    handlePageChange(filters.page + 1)
+                  }
+                  className={
+                    filters.page === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
                 />
               </PaginationItem>
             </PaginationContent>
@@ -215,7 +248,9 @@ export default function OrdersManagement() {
         open={confirmModalOpen}
         order={confirmingOrder}
         loading={isConfirming}
-        error={confirmError ? 'Failed to confirm order. Please try again.' : null}
+        error={
+          confirmError ? "Failed to confirm order. Please try again." : null
+        }
         onConfirm={handleConfirmOrder}
         onOpenChange={(open) => {
           setConfirmModalOpen(open);
