@@ -37,9 +37,6 @@ export function OrderTable({
     courierMap.set(c.order, c);
   });
 
-  console.log("courierRes", courierRes);
-console.log("mapped courier", courierMap);
-
   if (error) {
     return (
       <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm">
@@ -97,7 +94,6 @@ console.log("mapped courier", courierMap);
         <TableBody>
           {orders.map((order) => {
             const courier = courierMap.get(order._id);
-            console.log(courier);
 
             return (
               <TableRow key={order._id} className="hover:bg-muted/50">
