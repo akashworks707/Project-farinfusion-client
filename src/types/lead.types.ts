@@ -5,6 +5,7 @@ export interface ILead{
     phone: string;
     address: string;
     status?: string;
+    priority?: string;
     notes?: string;
     createdAt: Date;
     updatedAt?: Date;

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { EyeIcon, MoreHorizontal, PencilIcon, TrashIcon } from "lucide-react";
+import {EyeIcon, MoreHorizontal, PencilIcon, ShoppingBagIcon, TrashIcon} from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -158,6 +158,7 @@ const LeadsTable: React.FC = () => {
 
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem
+                                                            className={"cursor-pointer"}
                                                             onClick={() => {
                                                                 setLeadID(item._id);
                                                                 setLeadDetailsModalOpen(true);
@@ -167,6 +168,7 @@ const LeadsTable: React.FC = () => {
                                                         </DropdownMenuItem>
 
                                                         <DropdownMenuItem
+                                                            className={"cursor-pointer"}
                                                             onClick={() => {
                                                                 setLeadID(item._id);
                                                                 setLeadUpdateModalOpen(true);
@@ -176,7 +178,7 @@ const LeadsTable: React.FC = () => {
                                                         </DropdownMenuItem>
 
                                                         <DropdownMenuItem
-                                                            className="text-red-500"
+                                                            className="text-red-500 cursor-pointer"
                                                             onClick={() => {
                                                                 setLeadID(item._id);
                                                                 setLeadDeleteModalOpen(true);
@@ -184,6 +186,9 @@ const LeadsTable: React.FC = () => {
                                                             }}
                                                         >
                                                             <TrashIcon className="w-4 h-4 mr-2" /> Delete
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className={"cursor-pointer"}>
+                                                            <ShoppingBagIcon className={"w-4 h-4 mr-2"}/> Sell
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>

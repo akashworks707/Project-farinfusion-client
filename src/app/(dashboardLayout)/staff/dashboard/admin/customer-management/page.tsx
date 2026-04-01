@@ -17,6 +17,7 @@ import TablePagination from "@/components/shared/TablePagination";
 import { DynamicDataTable } from "@/components/dashboard/DataTable";
 import DashboardManagementPageSkeleton from "@/components/dashboard/DashboardManagePageSkeleton";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
+import CustomerToolbar from "@/components/dashboard/customer/CustomerToolbar";
 
 const CustomerManagementPage = () => {
   const [deleteUser] = useDeleteUserMutation();
@@ -56,12 +57,21 @@ const CustomerManagementPage = () => {
   const columns: ColumnDef<IUser>[] = [
     { accessorKey: "name", header: "Name" },
     { accessorKey: "email", header: "Email" },
+    { accessorKey: "phone", header: "Phone" },
+    { accessorKey: "", header: "Order" },
   ];
 
   // Actions
   const actions = [
     {
       label: "View",
+      onClick: (user: IUser) => {
+        setSelectedUser(user);
+        setOpenViewModal(true);
+      },
+    },
+    {
+      label: "Edit",
       onClick: (user: IUser) => {
         setSelectedUser(user);
         setOpenViewModal(true);
@@ -85,7 +95,7 @@ const CustomerManagementPage = () => {
   return (
     <div>
       <DashboardPageHeader title="Customer Management" />
-      <UserToolbar
+      <CustomerToolbar
         onSearchChange={setSearchTerm}
         onSortChange={setSort}
       />

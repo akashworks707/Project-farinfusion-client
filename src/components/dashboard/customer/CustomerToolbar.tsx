@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { SearchForm } from "@/components/shared/search-form";
 import Sort from "@/components/shared/Sort";
-import RegisterModal from "./RegisterModal";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
@@ -12,7 +11,7 @@ type UserToolbarProps = {
     onSortChange?: (value: string) => void;
 };
 
-export default function UserToolbar({ onSearchChange, onSortChange }: UserToolbarProps) {
+export default function CustomerToolbar({ onSearchChange, onSortChange }: UserToolbarProps) {
     const router = useRouter();
 
     return (
@@ -31,14 +30,11 @@ export default function UserToolbar({ onSearchChange, onSortChange }: UserToolba
                     type="button"
                     variant="destructive"
                     className="flex items-center gap-2 cursor-pointer"
-                    onClick={() => router.push("/staff/dashboard/admin/user-management/trash")}
+                    onClick={() => router.push("/staff/dashboard/admin/customer-management/trash")}
                 >
                     <Trash2 className="h-4 w-4" />
                     Trash
                 </Button>
-
-                {/* Register User Modal */}
-                <RegisterModal />
             </div>
         </div>
     );
