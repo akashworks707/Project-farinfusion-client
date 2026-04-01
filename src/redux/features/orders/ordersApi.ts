@@ -50,12 +50,12 @@ export const ordersApi = baseApi.injectEndpoints({
 
     confirmOrder: builder.mutation<
       OrderResponse,
-      { _id: string; courierName: 'STEADFAST' | 'OTHER' }
+      { _id: string; courierName: 'STEADFAST' | 'OTHER', orderStatus: string }
     >({
       query: ({ _id, courierName }) => ({
         url: `/order/${_id}`,
         method: 'PATCH',
-        body: {
+        data: {
           orderStatus: 'CONFIRMED',
           courierName,
         },
