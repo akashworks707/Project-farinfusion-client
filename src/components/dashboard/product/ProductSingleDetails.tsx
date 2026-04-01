@@ -181,7 +181,7 @@ export default function ProductSingleDetails() {
                 <div className="flex items-center gap-4">
                     <Badge variant="destructive">Out of Stock</Badge>
                     <Select defaultValue="250ml">
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-45">
                             <SelectValue placeholder="Size" />
                         </SelectTrigger>
                         <SelectContent>
