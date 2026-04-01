@@ -9,7 +9,6 @@ import {
 import {
   useAppDispatch,
   useAppSelector,
-  useUpdateCourierStatusMutation,
 } from "@/lib/hooks";
 import { OrderStats } from "./OrderStats";
 import { OrderFilters } from "./OrderFilters";
@@ -62,9 +61,6 @@ export default function OrdersManagement() {
   const [confirmOrder, { isLoading: isConfirming, error: confirmError }] =
     useConfirmOrderMutation();
 
-  const [confirmCourier] = useUpdateCourierStatusMutation();
-
-  // Load all orders for stats calculation
   const { data: allOrdersData } = useGetAllOrdersQuery({
     page: 1,
     limit: 1000,
