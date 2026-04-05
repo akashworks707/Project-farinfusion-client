@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Search, Filter, ShoppingCart, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -31,17 +31,47 @@ export default function POSManagement() {
   const [createOrder, { isLoading: isCreatingOrder }] =
     useCreateOrderMutation();
 
-  const products = productsData?.data || [];
+  const allProducts: IProduct[] = useMemo(
+    () => productsData?.data || [],
+    [productsData],
+  );
   const categories = categoriesData?.data || [];
+  const filteredProducts = useMemo(() => {
+    let result = allProducts;
 
-  const totalCartItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    // Filter by search term (title or description)
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase().trim();
+      result = result.filter(
+        (p) =>
+          p.title?.toLowerCase().includes(q) ||
+          p.description?.toLowerCase().includes(q),
+      );
+    }
+
+    // Filter by category title
+    if (category.trim()) {
+      result = result.filter(
+        (p) =>
+          (p.category as any)?.title?.toLowerCase() ===
+            category.toLowerCase() ||
+          (typeof p.category === "string" &&
+            p.category.toLowerCase() === category.toLowerCase()),
+      );
+    }
+
+    return result;
+  }, [allProducts, searchTerm, category]);
+
+  const totalCartItems = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
 
   const handleAddToCart = (product: IProduct) => {
     setCartItems((prev) => {
-      const existingItem = prev.find(
-        (item) => item.product._id === product._id,
-      );
-      if (existingItem) {
+      const existing = prev.find((item) => item.product._id === product._id);
+      if (existing) {
         return prev.map((item) =>
           item.product._id === product._id
             ? { ...item, quantity: item.quantity + 1 }
@@ -102,6 +132,7 @@ export default function POSManagement() {
           phone: customerData.phone,
           address: customerData.address,
         },
+        note: customerData.notes ?? "",
         seller: user.data?._id,
       }).unwrap();
 
@@ -143,8 +174,9 @@ export default function POSManagement() {
 
           {/* Filters */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-2/5 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search products..."
                 value={searchTerm}
@@ -153,6 +185,7 @@ export default function POSManagement() {
               />
             </div>
 
+            {/* Category filter */}
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none z-10" />
               <select
@@ -160,17 +193,51 @@ export default function POSManagement() {
                 onChange={(e) => setCategory(e.target.value)}
                 className="pl-9 pr-4 py-2 h-10 w-full text-sm rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
               >
-                {categories.map((cat) => (
-                  <option
-                    key={cat?._id}
-                    value={cat?.title === "All Categories" ? "" : cat?.title}
-                  >
-                    {cat?.title}
-                  </option>
-                ))}
+                <option value="">All Categories</option>
+                {categories
+                  .filter((cat) => cat?.title !== "All Categories")
+                  .map((cat) => (
+                    <option key={cat?._id} value={cat?.title ?? ""}>
+                      {cat?.title}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
+
+          {/* Active filter chip */}
+          {(searchTerm || category) && (
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Showing {filteredProducts.length} of {allProducts.length}{" "}
+                products
+              </span>
+              {searchTerm && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                  &quot;{searchTerm}&quot;
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="hover:text-blue-900"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {category && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700 dark:bg-violet-900/20 dark:text-violet-400">
+                  {category}
+                  <button
+                    onClick={() => setCategory("")}
+                    className="hover:text-violet-900"
+                    aria-label="Clear category"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Products Grid */}
@@ -185,15 +252,27 @@ export default function POSManagement() {
                   </p>
                 </div>
               </div>
-            ) : products.length === 0 ? (
-              <div className="flex items-center justify-center h-64">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+            ) : filteredProducts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 gap-2">
+                <Search className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   No products found
                 </p>
+                {(searchTerm || category) && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      setCategory("");
+                    }}
+                    className="text-xs text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    Clear filters
+                  </button>
+                )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {products.map((product) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredProducts.map((product) => (
                   <POSProductListCard
                     key={product._id}
                     product={product}
@@ -207,6 +286,7 @@ export default function POSManagement() {
         </div>
       </div>
 
+      {/* ── Desktop Cart Sidebar ── */}
       <div className="hidden lg:flex w-96 shrink-0 border-l border-gray-200 dark:border-gray-700 overflow-hidden">
         <POSCartSidebar
           items={cartItems}
@@ -217,6 +297,7 @@ export default function POSManagement() {
         />
       </div>
 
+      {/* ── Mobile overlay ── */}
       {mobileCartOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -225,6 +306,7 @@ export default function POSManagement() {
         />
       )}
 
+      {/* ── Mobile Cart Drawer ── */}
       <div
         className={cn(
           "fixed inset-y-0 right-0 z-50 w-full max-w-sm flex flex-col bg-white dark:bg-gray-900 shadow-2xl transition-transform duration-300 ease-in-out lg:hidden",

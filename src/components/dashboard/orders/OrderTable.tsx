@@ -108,7 +108,7 @@ export function OrderTable({
             return (
               <TableRow key={order._id} className="hover:bg-muted/50">
                 <TableCell className="font-mono text-xs font-medium">
-                  {order?.customOrderId || order._id?.slice(0, 10)}...
+                  {order?.customOrderId || order._id?.slice(0, 10)}
                 </TableCell>
                 <TableCell>
                   <span className="text-xs font-medium">

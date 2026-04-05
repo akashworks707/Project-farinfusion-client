@@ -21,6 +21,7 @@ export type DeliveryStatus =
  export type CreateOrderPayload = {
   orderType: "POS" | "ONLINE" | "DELIVERY";
   paymentMethod?: "COD" | "ONLINE";
+  note: string;
 
   products: {
     product: string;
