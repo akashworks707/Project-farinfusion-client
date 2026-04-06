@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
+import React, { useState, useRef, useEffect } from "react";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Search, SlidersHorizontal, RotateCcw, X } from 'lucide-react';
-import type { OrderStatus } from '@/types/orders';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Search, SlidersHorizontal, RotateCcw, X } from "lucide-react";
+import type { OrderStatus } from "@/types/orders";
+import { cn } from "@/lib/utils";
 
 interface OrderFiltersProps {
-  statusFilter: OrderStatus | '';
+  statusFilter: OrderStatus | "";
   searchFilter: string;
-  onStatusChange: (status: OrderStatus | '') => void;
+  onStatusChange: (status: OrderStatus | "") => void;
   onSearchChange: (search: string) => void;
   onReset: () => void;
   totalResults?: number;
@@ -31,28 +31,28 @@ const ORDER_STATUSES: {
   chip: string;
 }[] = [
   {
-    value: 'PENDING',
-    label: 'Pending',
-    dot: 'bg-amber-500',
-    chip: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800',
+    value: "PENDING",
+    label: "Pending",
+    dot: "bg-amber-500",
+    chip: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
   },
   {
-    value: 'CONFIRMED',
-    label: 'Confirmed',
-    dot: 'bg-emerald-500',
-    chip: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800',
+    value: "CONFIRMED",
+    label: "Confirmed",
+    dot: "bg-emerald-500",
+    chip: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
   },
   {
-    value: 'COMPLETED',
-    label: 'Completed',
-    dot: 'bg-violet-500',
-    chip: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800',
+    value: "COMPLETED",
+    label: "Completed",
+    dot: "bg-violet-500",
+    chip: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800",
   },
   {
-    value: 'CANCELLED',
-    label: 'Cancelled',
-    dot: 'bg-red-500',
-    chip: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
+    value: "CANCELLED",
+    label: "Cancelled",
+    dot: "bg-red-500",
+    chip: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
   },
 ];
 
@@ -64,41 +64,37 @@ export function OrderFilters({
   onReset,
   totalResults,
 }: OrderFiltersProps) {
-  // Local state for debouncing search input
   const [localSearch, setLocalSearch] = useState(searchFilter);
+
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setLocalSearch(searchFilter);
   }, [searchFilter]);
 
-  const debounced = useCallback(
-    (() => {
-      let timer: ReturnType<typeof setTimeout>;
-      return (val: string) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => onSearchChange(val), 400);
-      };
-    }),
-    [onSearchChange],
-  );
-
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
+
     setLocalSearch(val);
-    debounced();
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      onSearchChange(val);
+    }, 400);
   };
 
   const clearSearch = () => {
-    setLocalSearch('');
-    onSearchChange('');
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setLocalSearch("");
+    onSearchChange("");
   };
 
-  const hasActiveFilters = !!statusFilter || !!searchFilter;
+  const hasActiveFilters = statusFilter || searchFilter;
   const activeStatus = ORDER_STATUSES.find((s) => s.value === statusFilter);
 
   return (
     <div className="rounded-xl border border-gray-200/80 bg-white p-4 dark:border-gray-700/60 dark:bg-gray-900 space-y-3">
-      {/* ── Filter controls row ── */}
+      {/* ── Controls row ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         {/* Search */}
         <div className="relative flex-1">
@@ -124,9 +120,9 @@ export function OrderFilters({
         <div className="flex shrink-0 items-center gap-2">
           <SlidersHorizontal className="h-4 w-4 shrink-0 text-gray-400" />
           <Select
-            value={statusFilter || 'all'}
+            value={statusFilter || "all"}
             onValueChange={(val) =>
-              onStatusChange(val === 'all' ? '' : (val as OrderStatus))
+              onStatusChange(val === "all" ? "" : (val as OrderStatus))
             }
           >
             <SelectTrigger className="h-10 w-44 rounded-lg border-gray-200 bg-gray-50/60 text-sm focus:border-blue-400 dark:border-gray-700 dark:bg-gray-800/60 dark:focus:border-blue-500 transition-colors">
@@ -143,7 +139,7 @@ export function OrderFilters({
                   className="cursor-pointer text-sm"
                 >
                   <div className="flex items-center gap-2">
-                    <span className={cn('h-2 w-2 rounded-full', s.dot)} />
+                    <span className={cn("h-2 w-2 rounded-full", s.dot)} />
                     {s.label}
                   </div>
                 </SelectItem>
@@ -152,7 +148,7 @@ export function OrderFilters({
           </Select>
         </div>
 
-        {/* Reset — only when filters active */}
+        {/* Reset */}
         {hasActiveFilters && (
           <Button
             variant="outline"
@@ -166,17 +162,16 @@ export function OrderFilters({
         )}
       </div>
 
-      {/* ── Active filter chips + result count ── */}
+      {/* ── Active chips + result count ── */}
       {(hasActiveFilters || totalResults !== undefined) && (
         <div className="flex flex-wrap items-center gap-2">
           {totalResults !== undefined && (
             <span className="text-xs text-gray-400 dark:text-gray-500">
-              {totalResults} result{totalResults !== 1 ? 's' : ''}
-              {hasActiveFilters && ' matching filters'}
+              {totalResults} result{totalResults !== 1 ? "s" : ""}
+              {hasActiveFilters && " matching filters"}
             </span>
           )}
 
-          {/* Search chip */}
           {searchFilter && (
             <Badge
               variant="outline"
@@ -194,19 +189,20 @@ export function OrderFilters({
             </Badge>
           )}
 
-          {/* Status chip */}
           {activeStatus && (
             <Badge
               variant="outline"
               className={cn(
-                'flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                "flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold",
                 activeStatus.chip,
               )}
             >
-              <span className={cn('h-1.5 w-1.5 rounded-full', activeStatus.dot)} />
+              <span
+                className={cn("h-1.5 w-1.5 rounded-full", activeStatus.dot)}
+              />
               {activeStatus.label}
               <button
-                onClick={() => onStatusChange('')}
+                onClick={() => onStatusChange("")}
                 aria-label="Remove status filter"
                 className="ml-0.5"
               >
