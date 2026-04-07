@@ -72,7 +72,7 @@ export function OrderRowActions({
   const { data } = useGetMeQuery(undefined);
   const userRole = data?.data?.role;
   const canEdit =
-    ["ADMIN", "MODERATOR", "MANAGER", "TELLICELSS"].includes(userRole) &&
+    userRole && ["ADMIN", "MODERATOR", "MANAGER", "TELLICELSS"].includes(userRole) &&
     !order?.courierName;
 
   const [editOpen, setEditOpen] = useState(false);
