@@ -50,7 +50,7 @@ export enum Role {
     ADMIN = "ADMIN",
     MANAGER = "MANAGER",
     MODERATOR = "MODERATOR",
-    CUSTOMER = "CUSTOMER"
+    TELLICELSS = "TELLICELSS"
 }
 export enum IsActive {
     ACTIVE = "ACTIVE",
@@ -70,6 +70,7 @@ export interface IUser {
     isVerified?: boolean;
     isDeleted?: boolean;
     salary?: number;
+    commissionSalary?: number;
     role?: Role;
     createdAt?: string
     updatedAt?: string
@@ -92,7 +93,6 @@ export interface ICategory {
   image: string;
   status: CategoryStatus;
   productCount: number;
-  showOrder: number;
 }
 
 export enum BrandStatus {
@@ -121,15 +121,8 @@ export interface IProduct {
 
     // Basic Info
     title: string;                  // e.g., "Aveeno Baby Sunscreen"
-    brand: string | {
-        _id: string;
-        title: string;
-    };
-
-    category: string | {
-        _id: string;
-        title: string;
-    };
+    brand: string;           // Reference to Brand collection
+    category: string;        // Reference to Category collection
     size?: string;                  // e.g., "88ml"
     slug?: string;                  // URL-friendly slug
 

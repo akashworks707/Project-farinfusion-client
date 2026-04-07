@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   useGetAllOrdersQuery,
   useConfirmOrderMutation,
   useCompleteOrderMutation,
 } from '@/redux/features/orders/ordersApi';
 import {
-  useAppDispatch,
-  useAppSelector,
   useCreateCourierMutation,
 } from '@/lib/hooks';
 import { OrderStats } from './OrderStats';
@@ -27,28 +25,19 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import type { Order } from '@/types/orders';
+import type { Order, OrderStatus } from '@/types/orders';
 import { toast } from 'sonner';
-import {
-  resetFilters,
-  setSearchFilter,
-  setStatusFilter,
-  setPage,
-  setSelectedOrder as setSelectedOrderAction,
-  setConfirmingOrder as setConfirmingOrderAction,
-} from '@/redux/features/orders/ordersSlice';
+
+const LIMIT = 10;
 
 export default function OrdersManagement() {
-  const dispatch = useAppDispatch();
-
-  const filters = useAppSelector((state) => state.orders.filters);
-  const selectedOrderId = useAppSelector((state) => state.orders.selectedOrderId);
-  const confirmingOrderId = useAppSelector((state) => state.orders.confirmingOrderId);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<OrderStatus | ''>('');
+  const [page, setPage] = useState(1);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [confirmingOrder, setConfirmingOrder] = useState<Order | null>(null);
   const [completingOrder, setCompletingOrder] = useState<Order | null>(null);
-
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
@@ -61,14 +50,15 @@ export default function OrdersManagement() {
     refetch,
   } = useGetAllOrdersQuery(
     {
-      page: filters.page,
-      limit: filters.limit,
-      ...(filters.search && { search: filters.search }),
-      ...(filters.status && { status: filters.status }),
+      page,
+     limit: LIMIT,
+  ...(search && { search }),
+  ...(status && { orderStatus: status }),
     },
     { pollingInterval: 10000 },
   );
 
+  // Stats — separate unfiltered query
   const { data: allOrdersData } = useGetAllOrdersQuery({ page: 1, limit: 1000 });
 
   const [confirmOrder, { isLoading: isConfirming, error: confirmError }] =
@@ -77,50 +67,30 @@ export default function OrdersManagement() {
     useCompleteOrderMutation();
   const [createCourier] = useCreateCourierMutation();
 
-  useEffect(() => {
-    if (selectedOrderId && ordersData?.data) {
-      const order = ordersData.data.find((o) => o._id === selectedOrderId);
-      if (order) {
-        setTimeout(() => {
-          setSelectedOrder(order);
-          setDetailsOpen(true);
-        }, 100);
-      }
-    }
-  }, [selectedOrderId, ordersData]);
-
-  useEffect(() => {
-    if (confirmingOrderId && ordersData?.data) {
-      const order = ordersData.data.find((o) => o._id === confirmingOrderId);
-      if (order) {
-        setTimeout(() => {
-          setConfirmingOrder(order);
-          setConfirmModalOpen(true);
-        }, 100);
-      }
-    }
-  }, [confirmingOrderId, ordersData]);
-
-  const handleStatusChange = (status: string) => {
-    dispatch(setStatusFilter(status as any));
-    dispatch(setPage(1)); 
+  const handleStatusChange = (val: OrderStatus | '') => {
+    setStatus(val);
+    setPage(1);
   };
 
-  const handleSearchChange = (search: string) => {
-    dispatch(setSearchFilter(search));
-    dispatch(setPage(1)); 
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setPage(1);
   };
 
   const handleReset = () => {
-    dispatch(resetFilters());
+    setSearch('');
+    setStatus('');
+    setPage(1);
   };
 
   const handleConfirmClick = (order: Order) => {
-    dispatch(setConfirmingOrderAction(order._id));
+    setConfirmingOrder(order);
+    setConfirmModalOpen(true);
   };
 
   const handleViewClick = (order: Order) => {
-    dispatch(setSelectedOrderAction(order._id));
+    setSelectedOrder(order);
+    setDetailsOpen(true);
   };
 
   const handleCompleteClick = (order: Order) => {
@@ -155,7 +125,6 @@ export default function OrdersManagement() {
         description: `Order ${confirmingOrder.customOrderId || confirmingOrder._id} has been confirmed.`,
       });
       setConfirmModalOpen(false);
-      dispatch(setConfirmingOrderAction(null));
       setConfirmingOrder(null);
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to confirm order');
@@ -180,13 +149,13 @@ export default function OrdersManagement() {
   };
 
   const handlePageChange = (newPage: number) => {
-    dispatch(setPage(newPage));
+    setPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const orders = ordersData?.data || [];
   const totalCount = ordersData?.totalCount || 0;
-  const totalPages = Math.ceil(totalCount / filters.limit);
+  const totalPages = Math.ceil(totalCount / LIMIT);
   const allOrders = allOrdersData?.data || [];
 
   return (
@@ -204,8 +173,8 @@ export default function OrdersManagement() {
 
       {/* Filters */}
       <OrderFilters
-        statusFilter={filters.status}
-        searchFilter={filters.search}
+        statusFilter={status}
+        searchFilter={search}
         onStatusChange={handleStatusChange}
         onSearchChange={handleSearchChange}
         onReset={handleReset}
@@ -231,12 +200,8 @@ export default function OrdersManagement() {
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() =>
-                    filters.page > 1 && handlePageChange(filters.page - 1)
-                  }
-                  className={
-                    filters.page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
-                  }
+                  onClick={() => page > 1 && handlePageChange(page - 1)}
+                  className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                 />
               </PaginationItem>
 
@@ -244,19 +209,19 @@ export default function OrdersManagement() {
                 let pageNum: number;
                 if (totalPages <= 5) {
                   pageNum = i + 1;
-                } else if (filters.page <= 3) {
+                } else if (page <= 3) {
                   pageNum = i + 1;
-                } else if (filters.page >= totalPages - 2) {
+                } else if (page >= totalPages - 2) {
                   pageNum = totalPages - 4 + i;
                 } else {
-                  pageNum = filters.page - 2 + i;
+                  pageNum = page - 2 + i;
                 }
 
                 return (
                   <PaginationItem key={pageNum}>
                     <PaginationLink
                       onClick={() => handlePageChange(pageNum)}
-                      isActive={filters.page === pageNum}
+                      isActive={page === pageNum}
                       className="cursor-pointer"
                     >
                       {pageNum}
@@ -267,13 +232,9 @@ export default function OrdersManagement() {
 
               <PaginationItem>
                 <PaginationNext
-                  onClick={() =>
-                    filters.page < totalPages && handlePageChange(filters.page + 1)
-                  }
+                  onClick={() => page < totalPages && handlePageChange(page + 1)}
                   className={
-                    filters.page === totalPages
-                      ? 'pointer-events-none opacity-50'
-                      : 'cursor-pointer'
+                    page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'
                   }
                 />
               </PaginationItem>
@@ -297,10 +258,7 @@ export default function OrdersManagement() {
         onConfirm={handleConfirmOrder}
         onOpenChange={(open) => {
           setConfirmModalOpen(open);
-          if (!open) {
-            dispatch(setConfirmingOrderAction(null));
-            setConfirmingOrder(null);
-          }
+          if (!open) setConfirmingOrder(null);
         }}
       />
 
@@ -321,10 +279,7 @@ export default function OrdersManagement() {
         open={detailsOpen}
         onOpenChange={(open) => {
           setDetailsOpen(open);
-          if (!open) {
-            dispatch(setSelectedOrderAction(null));
-            setSelectedOrder(null);
-          }
+          if (!open) setSelectedOrder(null);
         }}
       />
     </div>
