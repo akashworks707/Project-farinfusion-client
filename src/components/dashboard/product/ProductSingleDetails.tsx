@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +46,7 @@ export default function ProductSingleDetails() {
         );
     }
 
-    const product = data?.data;
+    const product: any = data?.data;
 
     // console.log(product);
 

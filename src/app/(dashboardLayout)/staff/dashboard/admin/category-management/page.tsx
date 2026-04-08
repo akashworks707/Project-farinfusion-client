@@ -126,7 +126,7 @@ const CategoryManagementPage = () => {
         <CategoryDetailsModal
           open={openViewModal}
           onOpenChange={setOpenViewModal}
-          category={selectedCategory}
+          category={{ ...selectedCategory, showOrder: selectedCategory ?? 0 }}
         />
       )}
 
