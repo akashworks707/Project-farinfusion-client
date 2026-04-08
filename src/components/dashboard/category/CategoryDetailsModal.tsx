@@ -1,16 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  DialogContent
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CalendarDays, FileText, Tag } from "lucide-react";
+import { CalendarDays, Tag } from "lucide-react";
 import Image from "next/image";
 import {
   Card,
@@ -19,26 +17,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {ICategory} from "@/types";
 
 interface CategoryDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  category?: {
-    title: string;
-    slug?: string;
-    description?: string;
-    productCount: number;
-    showOrder: number;
-    status?: "ACTIVE" | "INACTIVE";
-    image?: string;
-    createdAt?: string;
-  };
+  // category?: {
+  //   title: string;
+  //   slug?: string;
+  //   description?: string;
+  //   productCount: number;
+  //   showOrder: number;
+  //   status?: "ACTIVE" | "INACTIVE";
+  //   image?: string;
+  //   createdAt?: string;
+  // };
+  category?: any
 }
 
 
 export default function CategoryDetailsModal({open, onOpenChange, category} : CategoryDetailsModalProps) {
-  console.log(category)
+  // console.log(category)
   if (!category) return null;
 
   return (
